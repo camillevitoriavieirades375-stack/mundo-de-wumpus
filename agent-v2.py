@@ -1,42 +1,3 @@
-"""
-Mundo de Wumpus - Etapa 3: Agente Reativo (versão 2)
-Inteligência Computacional (FECOMP-UFPA) - Projeto de Desenvolvimento
-Integrante 3: Camille Vitória Vieira de Souza
-
-Esta versão engloba a versão 1 (regras do tipo  Se <percepções> então <ação>)
-e acrescenta, conforme o slide 24:
-
-  1. ESTRUTURA DE MEMÓRIA: uma matriz-réplica do ambiente (grade mental),
-     implementada como dicionário {(x, y): Celula}, com as anotações feitas
-     pelo agente (visitada, brisa, fedor, ausência/certeza de poço e de Wumpus).
-  2. CONHECIMENTO REGISTRADO NA MEMÓRIA usado na escolha da regra: inferência
-     lógica de perigo (propagação de restrições até o ponto fixo) e
-     planejamento de caminho (busca em largura sobre as casas provadamente seguras).
-  3. MECANISMO MAIS INTELIGENTE PARA ESCOLHA DA REGRA: as regras são avaliadas
-     por prioridade e, quando a regra escolhida admite várias ações possíveis
-     (várias casas-alvo), a decisão é tomada por uma heurística de utilidade
-     (custo do caminho, ganho de informação e risco estimado) no lugar da
-     escolha aleatória da versão 1.
-
-Classificação (estrutura de agentes): agente reativo baseado em modelo, isto é,
-agente com estado interno (slide "Agentes com Estado Interno ou baseados em
-Modelos"). Justificativa completa no relatório da Etapa 3.
-
-CONTRATO DE INTEGRAÇÃO COM O AMBIENTE (ambiente.py / Etapa 1)
--------------------------------------------------------------
-  * Coordenadas (x, y): x = coluna (cresce para L), y = linha (cresce para N);
-    a casa é (0, 0), canto inferior esquerdo da matriz n x n.
-  * A cada passo o ambiente chama  acao = agente.decidir(percepcoes).
-  * percepcoes: conjunto/lista de strings entre
-        "brisa" ("b"), "fedor" ("f"), "brilho" ("br"), "impacto" ("i"), "grito" ("g")
-    (também é aceito um dict {"brisa": True, ...}).
-  * acao devolvida (mesma notação da Aula 04):
-        "mov(N)", "mov(S)", "mov(L)", "mov(O)", "atirar(N|S|L|O)", "pegar", "fim"
-  * Ao receber "impacto" depois de um mov(d), o agente entende que não saiu do lugar.
-  * O agente NÃO precisa conhecer n (descobre as paredes pelo "impacto"); se o
-    ambiente quiser informar, basta  AgenteReativoV2(n=n).
-"""
-
 from __future__ import annotations
 
 import random
@@ -354,6 +315,15 @@ class AgenteReativoV2:
                              "regra": self.ultima_regra, "acao": acao})
         return acao
 
+    # ---- compatibilidade com a versão 1 (AgenteReativoV1) ------------------ #
+    def escolher_acao(self, percepcoes) -> str:
+        """Mesmo nome de método da versão 1; equivale a decidir()."""
+        return self.decidir(percepcoes)
+
+    @property
+    def tem_flecha(self) -> bool:
+        return self.flechas > 0
+
     @property
     def posicao(self):
         return self.pos
@@ -515,7 +485,14 @@ class AgenteReativoV2:
 
 
 if __name__ == "__main__":
-    # Demonstração mínima: o agente em uma casa sem percepções.
-    ag = AgenteReativoV2(n=4, registrar_log=True)
-    print(ag.decidir([]), ag.ultima_regra)
-    print(ag.mapa_mental())
+    agente = AgenteReativoV2()
+
+    # Simulando percepções para ver o agente respondendo no terminal
+    # (mesmo teste do AgenteReativoV1; as percepções não formam um caminho real)
+    testes = [[], ['b'], ['f'], ['f', 'b'], ['br']]
+
+    print("=== TESTANDO AGENTE REATIVO V2 ===")
+    for p in testes:
+        acao = agente.escolher_acao(p)
+        print(f"Percepção: {str(p):10s} -> Ação: {acao} | Regra: {agente.ultima_regra} "
+              f"| Tem flecha? {agente.tem_flecha}")
